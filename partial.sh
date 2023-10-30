@@ -186,11 +186,11 @@ locals {
 
 EOF
 
-( cd ~/provision-image/check && terraform init )
-( cd ~/provision-image/check && terraform plan )
+( cd /provision/check && terraform init )
+( cd /provision/check && terraform plan )
 
 if [ $? -ne 0 ]; then
-cat <<-EOF >> ~/provision-image/main/main.tf
+cat <<-EOF >> /provision/main/main.tf
 resource "aws_internet_gateway" "internet-gateway" {
   vpc_id = local.vpc_id
 
@@ -205,7 +205,7 @@ locals {
 
 EOF
 else
-cat <<-EOF >> ~/provision-image/main/main.tf
+cat <<-EOF >> /provision/main/main.tf
 data "aws_internet_gateway" "internet-gateway" {
   filter {
     name   = "attachment.vpc-id"
@@ -220,7 +220,7 @@ locals {
 EOF
 fi
 
-cat <<-EOF >> ~/provision-image/main/main.tf
+cat <<-EOF >> /provision/main/main.tf
 ##################################################ROUTETABLE-IGW
 resource "aws_route_table" "pub-sub-routetable" {
   vpc_id = local.vpc_id
@@ -426,7 +426,7 @@ resource "aws_security_group" "eks-security-group" {
 EOF
 
 if [ "True" = "$LB_POLICY" ]; then
-cat <<-EOF >> ~/provision-image/main/main.tf
+cat <<-EOF >> /provision/main/main.tf
 resource "aws_iam_policy" "alb_controller" {
   name        = "AWSLoadBalancerControllerIAMPolicy-doran"
   description = "Policy for the AWS ALB controller"
