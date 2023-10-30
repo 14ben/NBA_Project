@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-configmap 
+data:
+  TITLE: ben 
+  PRI_SUB_COUNT: '3'
+  PUB_SUB_COUNT: '3'
+  EKS_VER: '1.23'
+  INSTANCE_TYPE: t3.medium
+  CAPACITY_TYPE: SPOT
+  SCALING_MAX: '3'
+  SCALING_MIN: '1'
+  SCALING_DESIRE: '2'
+  DL: "$"
+  AWS_EKS_NAME: ben-eks
+  AWS_DATAPLANE_NAME: ben-eks-node-group
+  LB_EOF: 'EOF'
+  LB_POLICY: 'True'
+  VPC_NAME: 'beeeeen-vpc'

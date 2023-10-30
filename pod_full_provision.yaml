@@ -1,0 +1,16 @@
+apiVersion: v1 
+kind: Pod 
+metadata:
+   name: terraform-pod 
+spec:
+   containers:
+   - name: terraform-container 
+     image: 622164100401.dkr.ecr.ap-northeast-1.amazonaws.com/nba_full_provision:0.3
+     envFrom:
+       - configMapRef:
+           name: env-configmap # 위에서 정의한 ConfigMap의 이름입니다.
+       - secretRef:
+           name : aws-credentials-choi # AWS credentials secret의 이름입니다
+     command : ["/bin/bash", "-c"]
+     args: ["/provision/select.sh && /provision/rev.05_full_pro.sh && tail -f /dev/null"]
+   restartPolicy: Never
