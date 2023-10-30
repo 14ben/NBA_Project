@@ -17,4 +17,4 @@ data:
   AWS_DATAPLANE_NAME: ben-eks-node-group
   LB_EOF: 'EOF'
   LB_POLICY: 'True'
-  VPC_NAME: 'beeeeen-vpc'
+  VPC_NAME: 'beeen-vpc'
