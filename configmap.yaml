@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: env-configmap 
 data:
-  TITLE: beeen 
+  TITLE: ben
   PRI_SUB_COUNT: '3'
   PUB_SUB_COUNT: '3'
   EKS_VER: '1.23'
@@ -17,4 +17,4 @@ data:
   AWS_DATAPLANE_NAME: ben-eks-node-group
   LB_EOF: 'EOF'
   LB_POLICY: 'True'
-  VPC_NAME: 'beeen-vpc'
+  VPC_NAME: 'null'
