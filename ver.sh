@@ -11,7 +11,8 @@ if [ -n "$FILE_PART" ]; then
   sed -i 's#RUN chmod +x /provision/rev.[0-9]*_full_pro.sh#RUN chmod +x /provision/rev.'$FILE_PART'_full_pro.sh#' Dockerfile
 
   # pod.yaml 업데이트 
-  sed -i 's#args: ["/provision/rev.[0-9]*_full_pro.sh#args: ["/provision/rev.'$FILE_PART'_full_pro.sh#' pod_full_provision.yaml
+#  sed -i 's#args: ["/provision/rev.[0-9]*_full_pro.sh#args: ["/provision/rev.'$FILE_PART'_full_pro.sh#' pod_full_provision.yaml
+  sed -i 's#./rev.[0-9]*_full_pro.sh#./rev.'$FILE_PART'_full_pro.sh#' select.sh
 fi
 
 if [ -n "$NEW_VERSION" ]; then
