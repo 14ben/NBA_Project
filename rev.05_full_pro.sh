@@ -602,8 +602,8 @@ fi
 #  echo "LB_POLICY is True. Skipping policy creation."
 #fi
 #
-#terraform init
-#terraform apply -auto-approve
+terraform init
+terraform apply -auto-approve
 #apply_output=$(terraform apply -auto-approve 2>&1 | sed "s/\x1B\[[0-9;]*[JKmsu]//g" | grep -E "Error" || true)
 #echo "Create Success"
 #if [[ -n $apply_output ]]; then
