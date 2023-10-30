@@ -137,7 +137,7 @@ locals {
 }
 
 locals {
-  sub_nat_id = length(local.semi_nat_id) > 0 ? local.semi_nat_id[0] : null
+  sub_nat_id = local.semi_nat_id != null ? local.semi_nat_id[0] : null
 }
 
 resource "aws_route_table_association" "pubsub-nat-association" {
