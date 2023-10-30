@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#. ~/provision-image/.env
 
 mkdir main check
 
@@ -137,13 +136,19 @@ locals {
 }
 
 locals {
-  sub_nat_id = local.semi_nat_id != null ? local.semi_nat_id[0] : null
+  sub_nat_id = length(local.semi_nat_id) > 0 ? local.semi_nat_id[0] : null
+}
+
+data "aws_nat_gateway" "nat" {
+  id = local.sub_nat_id
 }
 
 resource "aws_route_table_association" "pubsub-nat-association" {
  count = local.sub_nat_id != null ? 1 : 0
- subnet_id = data.aws_nat_gateway.ngw[0].subnet_id
+ subnet_id = data.aws_nat_gateway.nat.subnet_id
  route_table_id = aws_route_table.pub-sub-routetable.id
+
+ depends_on = [ data.aws_nat_gateway.nat]
 }
 
 resource "aws_nat_gateway" "nat-gateway" {

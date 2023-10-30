@@ -39,5 +39,5 @@ if [ $PLAN_RESULT -eq 0 ]; then
      ./partial.sh
 else
     echo @@@@@ [VPC not Found] Full Provison Start @@@@@
-    ./rev.05_full_pro.sh
+    ./rev.06_full_pro.sh
 fi
