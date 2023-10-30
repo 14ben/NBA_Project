@@ -679,10 +679,10 @@ EOF
 #fi
 #
 destroy() {
-  ( cd ~/provision-image/main && terraform destroy -auto-approve )
+  ( cd /provision/main && terraform destroy -auto-approve )
 }
 
 trap 'destroy' ERR
 
-( cd ~/provision-image/main && terraform init )
-( cd ~/provision-image/main && terraform apply -auto-approve )
+( cd /provision/main && terraform init )
+( cd /provision/main && terraform apply -auto-approve )

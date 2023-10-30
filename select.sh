@@ -35,9 +35,9 @@ rm check.tf
 
 # Plan 결과에 따라 다른 스크립트를 실행
 if [ $PLAN_RESULT -eq 0 ]; then
-     echo [$VPC_NAME] Partial Provision Start
+     echo @@@@@ [$VPC_NAME] Partial Provision Start @@@@@
      ./partial.sh
 else
-    echo [VPC not Found] Full Provison Start
+    echo @@@@@ [VPC not Found] Full Provison Start @@@@@
     ./rev.05_full_pro.sh
 fi
