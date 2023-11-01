@@ -73,7 +73,7 @@ resource "aws_subnet" "${TITLE}-pri-subnet" {
   availability_zone       = data.aws_availability_zones.available.names[count.index % length(data.aws_availability_zones.available.names)]
   map_public_ip_on_launch = "false"
   tags = {
-    Name = "$TITLE-private-subnet-$DL{count.index+10}"
+    Name = "$TITLE-private-subnet-$DL{count.index+1}"
     "kubernetes.io/role/internal-elb" = "1"
   }
 }
@@ -168,7 +168,7 @@ resource "aws_security_group" "${TITLE}-eks-sg" {
   vpc_id      = aws_vpc.$TITLE-vpc.id
 
   tags = {
-    Name = "$TITLE-eks-sg"
+    Name = "$TITLE-eks-security-group"
   }
 
 ## 필수 ingress
@@ -302,7 +302,7 @@ EOF
     cat << EOF >> main.tf
 # create role about eks
 resource "aws_iam_role" "eks_role" {
-  name               = "${TITLE}-eks_role"
+  name               = "${TITLE}-eks-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role-eks.json
 }
 

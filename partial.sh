@@ -157,7 +157,7 @@ resource "aws_nat_gateway" "nat-gateway" {
   subnet_id     = aws_subnet.public-subnet[0].id
 
   tags = {
-    Name = "doran-nat-gateway"
+    Name = "$TITLE-nat-gateway"
   }
 }
 
@@ -290,7 +290,7 @@ data "aws_iam_policy_document" "assume_role-nodegroup" {
 
 #############################################CREATE-EKS-ROLE
 resource "aws_iam_role" "eks_role" {
-  name               = "$TITLE-eks_role"
+  name               = "$TITLE-eks-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role-eks.json
 }
 
@@ -433,7 +433,7 @@ EOF
 if [ "True" = "$LB_POLICY" ]; then
 cat <<-EOF >> /provision/main/main.tf
 resource "aws_iam_policy" "alb_controller" {
-  name        = "AWSLoadBalancerControllerIAMPolicy-doran"
+  name        = "AWSLoadBalancerControllerIAMPolicyQUEST"
   description = "Policy for the AWS ALB controller"
   policy      = <<$LB_EOF
 {
