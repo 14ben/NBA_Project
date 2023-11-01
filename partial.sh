@@ -143,14 +143,6 @@ data "aws_nat_gateway" "nat" {
   id = local.sub_nat_id
 }
 
-resource "aws_route_table_association" "pubsub-nat-association" {
- count = local.sub_nat_id != null ? 1 : 0
- subnet_id = data.aws_nat_gateway.nat.subnet_id
- route_table_id = aws_route_table.pub-sub-routetable.id
-
- depends_on = [ data.aws_nat_gateway.nat]
-}
-
 resource "aws_nat_gateway" "nat-gateway" {
   count = local.sub_nat_id == null ? 1 : 0
   allocation_id = local.eip_id
@@ -430,7 +422,7 @@ resource "aws_security_group" "eks-security-group" {
 }
 EOF
 
-if [ "True" = "$LB_POLICY" ]; then
+if [ "True" != "$LB_POLICY" ]; then
 cat <<-EOF >> /provision/main/main.tf
 resource "aws_iam_policy" "alb_controller" {
   name        = "AWSLoadBalancerControllerIAMPolicyQUEST"
