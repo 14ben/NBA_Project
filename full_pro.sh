@@ -612,13 +612,11 @@ terraform apply -auto-approve
 #  destroy
 
 
-
-#
-#if [ $? -ne 0 ]; then
-#  echo "Creation failed"
-#  curl -i -X POST -d '{"id":'$ID',"progress":"provision","state":"failed","emessage":"provision failed"}' -H "Content-Type: application/json" $API_ENDPOINT
-#  exit 1
-#else
-#  echo "Created successfully."
-#  curl -i -X POST -d '{"id":'$ID',"progress":"provision","state":"success","emessage":"Created successfully."}' -H "Content-Type: application/json" $API_ENDPOINT
-#fi
+if [ $? -ne 0 ]; then
+  echo "Creation failed"
+  curl -i -X POST -d '{"id":'$ID',"progress":"provision","state":"failed","emessage":"provision failed"}' -H "Content-Type: application/json" $API_ENDPOINT
+  exit 1
+else
+  echo "Created successfully."
+  curl -i -X POST -d '{"id":'$ID',"progress":"provision","state":"success","emessage":"Created successfully."}' -H "Content-Type: application/json" $API_ENDPOINT
+fi
