@@ -139,10 +139,6 @@ locals {
   sub_nat_id = local.semi_nat_id != null ? local.semi_nat_id[0] : null
 }
 
-data "aws_nat_gateway" "nat" {
-  id = local.sub_nat_id
-}
-
 resource "aws_nat_gateway" "nat-gateway" {
   count = local.sub_nat_id == null ? 1 : 0
   allocation_id = local.eip_id
