@@ -1,8 +1,10 @@
 #!/bin/bash
 
+. ~/doran/1103test/.env
+
 mkdir main check
 
-cat <<-EOF >> /provision/check/check.tf
+cat <<-EOF >> ~/doran/1103test/check/check.tf
 terraform {
   required_providers {
     aws = {
@@ -37,7 +39,7 @@ data "aws_internet_gateway" "doran_igw" {
 }
 EOF
 
-cat <<-EOF >> /provision/main/main.tf
+cat <<-EOF >> ~/doran/1103test/main/main.tf
 terraform {
   required_providers {
     aws = {
@@ -144,7 +146,7 @@ locals {
 
 resource "aws_nat_gateway" "nat-gateway" {
   count = local.sub_nat_id == null ? 1 : 0
-  allocation_id = local.eip_id
+  allocation_id = local.eip_id[0]
   subnet_id     = aws_subnet.public-subnet[0].id
 
   tags = {
@@ -166,15 +168,15 @@ resource "aws_eip" "eip" {
 }
 
 locals {
-  eip_id = aws_eip.eip[0].id != null ? aws_eip.eip[0].id : null
+  eip_id = aws_eip.eip[*].id != null ? aws_eip.eip[*].id : null
 }
 EOF
 
-( cd /provision/check && terraform init )
-( cd /provision/check && terraform plan )
+( cd ~/doran/1103test/check && terraform init )
+( cd ~/doran/1103test/check && terraform plan )
 
 if [ $? -ne 0 ]; then
-cat <<-EOF >> /provision/main/main.tf
+cat <<-EOF >> ~/doran/1103test/main/main.tf
 resource "aws_internet_gateway" "internet-gateway" {
   vpc_id = local.vpc_id
 
@@ -189,7 +191,7 @@ locals {
 
 EOF
 else
-cat <<-EOF >> /provision/main/main.tf
+cat <<-EOF >> ~/doran/1103test/main/main.tf
 data "aws_internet_gateway" "internet-gateway" {
   filter {
     name   = "attachment.vpc-id"
@@ -204,7 +206,7 @@ locals {
 EOF
 fi
 
-cat <<-EOF >> /provision/main/main.tf
+cat <<-EOF >> ~/doran/1103test/main/main.tf
 ##################################################ROUTETABLE-IGW
 resource "aws_route_table" "pub-sub-routetable" {
   vpc_id = local.vpc_id
@@ -410,7 +412,7 @@ resource "aws_security_group" "eks-security-group" {
 EOF
 
 if [ "False" = "$LB_POLICY" ]; then
-cat <<-EOF >> /provision/main/main.tf
+cat <<-EOF >> ~/doran/1103test/main/main.tf
 resource "aws_iam_policy" "alb_controller" {
   name        = "AWSLoadBalancerControllerIAMPolicy-doran"
   description = "Policy for the AWS ALB controller"
@@ -662,10 +664,10 @@ EOF
 fi
 
 destroy() {
-  ( cd /provision/main && terraform destroy -auto-approve )
+  ( cd ~/doran/1103test/main && terraform destroy -auto-approve )
 }
 
 trap 'destroy' ERR
 
-( cd /provision/main && terraform init )
-( cd /provision/main && terraform apply -auto-approve )
+( cd ~/doran/1103test/main && terraform init )
+( cd ~/doran/1103test/main && terraform apply -auto-approve )
