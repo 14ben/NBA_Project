@@ -1,9 +1,10 @@
 #!/bin/bash
 
+. ~/doran/1103test/.env
 
 mkdir main check
 
-cat <<-EOF >> /provision/check/check.tf
+cat <<-EOF >> ~/doran/1103test/check/check.tf
 terraform {
   required_providers {
     aws = {
@@ -38,7 +39,7 @@ data "aws_internet_gateway" "doran_igw" {
 }
 EOF
 
-cat <<-EOF >> /provision/main/main.tf
+cat <<-EOF >> ~/doran/1103test/main/main.tf
 terraform {
   required_providers {
     aws = {
@@ -93,17 +94,21 @@ locals {
   count_num = length(local.sorted_num) > 0 ? element(local.sorted_num, 0) : 0
 }
 
+locals {
+    cidr_sub = length(data.aws_subnets.subnet.ids) > 0 ? data.aws_subnet.subnet[data.aws_subnets.subnet.ids[0]].cidr_block : "0.0.0.0/24"
+}
+
 data "aws_availability_zones" "available" {}
 
 resource "aws_subnet" "public-subnet" {
   count = $PUB_SUB_COUNT
-
+  
   vpc_id                  = local.vpc_id
-  cidr_block              = "$DL{join(".", slice(split(".", cidrsubnet(data.aws_vpc.vpc-cidr.cidr_block, 0, 0)), 0, 2))}.$DL{count.index + local.count_num + 1}.0/24"
+  cidr_block              = "$DL{join(".", slice(split(".", cidrsubnet(data.aws_vpc.vpc-cidr.cidr_block, 0, 0)), 0, 2))}.$DL{(count.index + 1) * 16 + local.count_num}.$DL{join(".", slice(split(".", cidrsubnet(local.cidr_sub, 0, 0)), 3, 4))}"
   availability_zone       = data.aws_availability_zones.available.names[count.index % length(data.aws_availability_zones.available.names)]
   map_public_ip_on_launch = true
   tags = {
-    Name = "$TITLE-public-subnet-$DL{count.index + 1}"
+    Name = "doran-public-subnet-$DL{count.index + 1}"
     "kubernetes.io/role/elb" = 1
   }
 }
@@ -112,10 +117,10 @@ resource "aws_subnet" "private-subnet" {
   count = $PRI_SUB_COUNT
 
   vpc_id                  = local.vpc_id
-  cidr_block              = "$DL{join(".", slice(split(".", cidrsubnet(data.aws_vpc.vpc-cidr.cidr_block, 0, 0)), 0, 2))}.$DL{count.index + local.count_num + 1 + $PUB_SUB_COUNT}.0/24"
+  cidr_block              = "$DL{join(".", slice(split(".", cidrsubnet(data.aws_vpc.vpc-cidr.cidr_block, 0, 0)), 0, 2))}.$DL{(count.index + 1) * 16 + local.count_num + $PUB_SUB_COUNT * 16 }.$DL{join(".", slice(split(".", cidrsubnet(local.cidr_sub, 0, 0)), 3, 4))}"
   availability_zone       = data.aws_availability_zones.available.names[count.index % length(data.aws_availability_zones.available.names)]
   tags = {
-    Name = "$TITLE-private-subnet-$DL{count.index + 1}"
+    Name = "doran-private-subnet-$DL{count.index + 1}"
     "kubernetes.io/role/internal-elb" = 1
   }
 }
@@ -145,7 +150,7 @@ resource "aws_nat_gateway" "nat-gateway" {
   subnet_id     = aws_subnet.public-subnet[0].id
 
   tags = {
-    Name = "$TITLE-nat-gateway"
+    Name = "doran-nat-gateway"
   }
 }
 
@@ -154,15 +159,8 @@ locals {
 }
 
 #########################################EIP
-data "aws_eips" "eip" {}
-
-data "aws_eip" "eip" {
-  count = length(data.aws_eips.eip.allocation_ids)
-  id    = tolist(data.aws_eips.eip.allocation_ids)[count.index]
-}
-
 resource "aws_eip" "eip" {
-  count = length(data.aws_eips.eip.allocation_ids) < 1 ? 1 : 0
+  count = length(data.aws_nat_gateways.ngws.ids) < 1 ? 1 : 0
   domain = "vpc"
   tags = {
     Name = "$TITLE-eip"
@@ -170,20 +168,15 @@ resource "aws_eip" "eip" {
 }
 
 locals {
-  semi-eip_id = length(data.aws_eips.eip.allocation_ids) > 0 ? data.aws_eip.eip[0].id : null
+  eip_id = aws_eip.eip[0].id != null ? aws_eip.eip[0].id : null
 }
-
-locals {
-  eip_id = local.semi-eip_id != null ? local.semi-eip_id : aws_eip.eip[0].id
-}
-
 EOF
 
-( cd /provision/check && terraform init )
-( cd /provision/check && terraform plan )
+( cd ~/doran/1103test/check && terraform init )
+( cd ~/doran/1103test/check && terraform plan )
 
 if [ $? -ne 0 ]; then
-cat <<-EOF >> /provision/main/main.tf
+cat <<-EOF >> ~/doran/1103test/main/main.tf
 resource "aws_internet_gateway" "internet-gateway" {
   vpc_id = local.vpc_id
 
@@ -198,7 +191,7 @@ locals {
 
 EOF
 else
-cat <<-EOF >> /provision/main/main.tf
+cat <<-EOF >> ~/doran/1103test/main/main.tf
 data "aws_internet_gateway" "internet-gateway" {
   filter {
     name   = "attachment.vpc-id"
@@ -213,7 +206,7 @@ locals {
 EOF
 fi
 
-cat <<-EOF >> /provision/main/main.tf
+cat <<-EOF >> ~/doran/1103test/main/main.tf
 ##################################################ROUTETABLE-IGW
 resource "aws_route_table" "pub-sub-routetable" {
   vpc_id = local.vpc_id
@@ -278,7 +271,7 @@ data "aws_iam_policy_document" "assume_role-nodegroup" {
 
 #############################################CREATE-EKS-ROLE
 resource "aws_iam_role" "eks_role" {
-  name               = "$TITLE-eks-role"
+  name               = "$TITLE-eks_role"
   assume_role_policy = data.aws_iam_policy_document.assume_role-eks.json
 }
 
@@ -418,10 +411,10 @@ resource "aws_security_group" "eks-security-group" {
 }
 EOF
 
-if [ "True" != "$LB_POLICY" ]; then
-cat <<-EOF >> /provision/main/main.tf
+if [ "False" = "$LB_POLICY" ]; then
+cat <<-EOF >> ~/doran/1103test/main/main.tf
 resource "aws_iam_policy" "alb_controller" {
-  name        = "AWSLoadBalancerControllerIAMPolicyQUEST"
+  name        = "AWSLoadBalancerControllerIAMPolicy-doran"
   description = "Policy for the AWS ALB controller"
   policy      = <<$LB_EOF
 {
@@ -671,19 +664,10 @@ EOF
 fi
 
 destroy() {
-  ( cd /provision/main && terraform destroy -auto-approve )
+  ( cd ~/doran/1103test/main && terraform destroy -auto-approve )
 }
 
 trap 'destroy' ERR
 
-( cd /provision/main && terraform init )
-( cd /provision/main && terraform apply -auto-approve )
-
-if [ $? -ne 0 ]; then
-  echo "Creation failed"
-  curl -i -X POST -d '{"id":'$ID',"progress":"provision","state":"failed","emessage":"provision failed"}' -H "Content-Type: application/json" $API_ENDPOINT
-  exit 1
-else
-  echo "Created successfully."
-  curl -i -X POST -d '{"id":'$ID',"progress":"provision","state":"success","emessage":"Created successfully."}' -H "Content-Type: application/json" $API_ENDPOINT
-fi
+( cd ~/doran/1103test/main && terraform init )
+( cd ~/doran/1103test/main && terraform apply -auto-approve )
