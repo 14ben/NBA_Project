@@ -1,10 +1,8 @@
 #!/bin/bash
 
-. ~/doran/1103test/.env
-
 mkdir main check
 
-cat <<-EOF >> ~/doran/1103test/check/check.tf
+cat <<-EOF >> /provision/check/check.tf
 terraform {
   required_providers {
     aws = {
@@ -39,7 +37,7 @@ data "aws_internet_gateway" "doran_igw" {
 }
 EOF
 
-cat <<-EOF >> ~/doran/1103test/main/main.tf
+cat <<-EOF >> /provision/main/main.tf
 terraform {
   required_providers {
     aws = {
@@ -172,11 +170,11 @@ locals {
 }
 EOF
 
-( cd ~/doran/1103test/check && terraform init )
-( cd ~/doran/1103test/check && terraform plan )
+( cd /provision/check && terraform init )
+( cd /provision/check && terraform plan )
 
 if [ $? -ne 0 ]; then
-cat <<-EOF >> ~/doran/1103test/main/main.tf
+cat <<-EOF >> /provision/main/main.tf
 resource "aws_internet_gateway" "internet-gateway" {
   vpc_id = local.vpc_id
 
@@ -191,7 +189,7 @@ locals {
 
 EOF
 else
-cat <<-EOF >> ~/doran/1103test/main/main.tf
+cat <<-EOF >> /provision/main/main.tf
 data "aws_internet_gateway" "internet-gateway" {
   filter {
     name   = "attachment.vpc-id"
@@ -206,7 +204,7 @@ locals {
 EOF
 fi
 
-cat <<-EOF >> ~/doran/1103test/main/main.tf
+cat <<-EOF >> /provision/main/main.tf
 ##################################################ROUTETABLE-IGW
 resource "aws_route_table" "pub-sub-routetable" {
   vpc_id = local.vpc_id
@@ -412,7 +410,7 @@ resource "aws_security_group" "eks-security-group" {
 EOF
 
 if [ "False" = "$LB_POLICY" ]; then
-cat <<-EOF >> ~/doran/1103test/main/main.tf
+cat <<-EOF >> /provision/main/main.tf
 resource "aws_iam_policy" "alb_controller" {
   name        = "AWSLoadBalancerControllerIAMPolicy-doran"
   description = "Policy for the AWS ALB controller"
@@ -664,10 +662,10 @@ EOF
 fi
 
 destroy() {
-  ( cd ~/doran/1103test/main && terraform destroy -auto-approve )
+  ( cd /provision/main && terraform destroy -auto-approve )
 }
 
 trap 'destroy' ERR
 
-( cd ~/doran/1103test/main && terraform init )
-( cd ~/doran/1103test/main && terraform apply -auto-approve )
+( cd /provision/main && terraform init )
+( cd /provision/main && terraform apply -auto-approve )
