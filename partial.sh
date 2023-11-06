@@ -106,7 +106,7 @@ resource "aws_subnet" "public-subnet" {
   availability_zone       = data.aws_availability_zones.available.names[count.index % length(data.aws_availability_zones.available.names)]
   map_public_ip_on_launch = true
   tags = {
-    Name = "doran-public-subnet-$DL{count.index + 1}"
+    Name = "$TITLE-public-subnet-$DL{count.index + 1}"
     "kubernetes.io/role/elb" = 1
   }
 }
@@ -118,7 +118,7 @@ resource "aws_subnet" "private-subnet" {
   cidr_block              = "$DL{join(".", slice(split(".", cidrsubnet(data.aws_vpc.vpc-cidr.cidr_block, 0, 0)), 0, 2))}.$DL{(count.index + 1) * 16 + local.count_num + $PUB_SUB_COUNT * 16 }.$DL{join(".", slice(split(".", cidrsubnet(local.cidr_sub, 0, 0)), 3, 4))}"
   availability_zone       = data.aws_availability_zones.available.names[count.index % length(data.aws_availability_zones.available.names)]
   tags = {
-    Name = "doran-private-subnet-$DL{count.index + 1}"
+    Name = "$TITLE-private-subnet-$DL{count.index + 1}"
     "kubernetes.io/role/internal-elb" = 1
   }
 }
@@ -148,7 +148,7 @@ resource "aws_nat_gateway" "nat-gateway" {
   subnet_id     = aws_subnet.public-subnet[0].id
 
   tags = {
-    Name = "doran-nat-gateway"
+    Name = "$TITLE-nat-gateway"
   }
 }
 
@@ -158,7 +158,7 @@ locals {
 
 #########################################EIP
 resource "aws_eip" "eip" {
-  count = length(data.aws_nat_gateways.ngws.ids) < 1 ? 1 : 0
+  count = length(aws_nat_gateway.nat-gateway.id) > 0 ? 1 : 0
   domain = "vpc"
   tags = {
     Name = "$TITLE-eip"
@@ -166,7 +166,7 @@ resource "aws_eip" "eip" {
 }
 
 locals {
-  eip_id = aws_eip.eip[0].id != null ? aws_eip.eip[0].id : null
+  eip_id = aws_eip.eip.id != null ? aws_eip.eip.id : null
 }
 EOF
 
@@ -412,7 +412,7 @@ EOF
 if [ "False" = "$LB_POLICY" ]; then
 cat <<-EOF >> /provision/main/main.tf
 resource "aws_iam_policy" "alb_controller" {
-  name        = "AWSLoadBalancerControllerIAMPolicy-doran"
+  name        = "AWSLoadBalancerControllerIAMPolicyQUEST"
   description = "Policy for the AWS ALB controller"
   policy      = <<$LB_EOF
 {
