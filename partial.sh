@@ -1,10 +1,8 @@
 #!/bin/bash
 
-. ~/doran/1103test/.env
-
 mkdir main check
 
-cat <<-EOF >> ~/doran/1103test/check/check.tf
+cat <<-EOF >> ./check/check.tf
 terraform {
   required_providers {
     aws = {
@@ -39,7 +37,7 @@ data "aws_internet_gateway" "doran_igw" {
 }
 EOF
 
-cat <<-EOF >> ~/doran/1103test/main/main.tf
+cat <<-EOF >> ./main/main.tf
 terraform {
   required_providers {
     aws = {
@@ -160,7 +158,7 @@ locals {
 
 #########################################EIP
 resource "aws_eip" "eip" {
-  count = length(aws_nat_gateway.nat-gateway.id) > 0 ? 1 : 0
+  count = length(data.aws_nat_gateways.ngws.ids) < 1 ? 1 : 0
   domain = "vpc"
   tags = {
     Name = "$TITLE-eip"
@@ -168,19 +166,15 @@ resource "aws_eip" "eip" {
 }
 
 locals {
-<<<<<<< HEAD
-  eip_id = aws_eip.eip.id != null ? aws_eip.eip.id : null
-=======
   eip_id = aws_eip.eip[*].id != null ? aws_eip.eip[*].id : null
->>>>>>> b4b5541dceb1284f6f7ba620e560f0d7f9036a8e
 }
 EOF
 
-( cd ~/doran/1103test/check && terraform init )
-( cd ~/doran/1103test/check && terraform plan )
+( cd ./check && terraform init )
+( cd ./check && terraform plan )
 
 if [ $? -ne 0 ]; then
-cat <<-EOF >> ~/doran/1103test/main/main.tf
+cat <<-EOF >> ./main/main.tf
 resource "aws_internet_gateway" "internet-gateway" {
   vpc_id = local.vpc_id
 
@@ -195,7 +189,7 @@ locals {
 
 EOF
 else
-cat <<-EOF >> ~/doran/1103test/main/main.tf
+cat <<-EOF >> ./main/main.tf
 data "aws_internet_gateway" "internet-gateway" {
   filter {
     name   = "attachment.vpc-id"
@@ -210,7 +204,7 @@ locals {
 EOF
 fi
 
-cat <<-EOF >> ~/doran/1103test/main/main.tf
+cat <<-EOF >> ./main/main.tf
 ##################################################ROUTETABLE-IGW
 resource "aws_route_table" "pub-sub-routetable" {
   vpc_id = local.vpc_id
@@ -416,9 +410,9 @@ resource "aws_security_group" "eks-security-group" {
 EOF
 
 if [ "False" = "$LB_POLICY" ]; then
-cat <<-EOF >> ~/doran/1103test/main/main.tf
+cat <<-EOF >> ./main/main.tf
 resource "aws_iam_policy" "alb_controller" {
-  name        = "AWSLoadBalancerControllerIAMPolicyQUEST"
+  name        = "AWSLoadBalancerControllerIAMPolicy-doran"
   description = "Policy for the AWS ALB controller"
   policy      = <<$LB_EOF
 {
@@ -668,10 +662,10 @@ EOF
 fi
 
 destroy() {
-  ( cd ~/doran/1103test/main && terraform destroy -auto-approve )
+  ( cd ./main && terraform destroy -auto-approve )
 }
 
 trap 'destroy' ERR
 
-( cd ~/doran/1103test/main && terraform init )
-( cd ~/doran/1103test/main && terraform apply -auto-approve )
+( cd ./main && terraform init )
+( cd ./main && terraform apply -auto-approve )
