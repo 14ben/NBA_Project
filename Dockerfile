@@ -15,7 +15,11 @@ RUN mv terraform /usr/local/bin/
 
 WORKDIR /provision
 
+COPY partial.sh /provision/
+COPY select.sh /provision/
 COPY full_pro.sh /provision/
 COPY destroy.sh /provision/
 
 RUN chmod +x /provision/full_pro.sh
+RUN chmod +x /provision/select.sh
+RUN chmod +x /provision/partial.sh

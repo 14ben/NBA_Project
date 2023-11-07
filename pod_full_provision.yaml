@@ -5,7 +5,7 @@ metadata:
 spec:
    containers:
    - name: terraform-container 
-     image: 622164100401.dkr.ecr.ap-northeast-1.amazonaws.com/nba_full_provision:7.0
+     image: 622164100401.dkr.ecr.ap-northeast-1.amazonaws.com/nba_full_provision:6.5
      envFrom:
        - configMapRef:
            name: env-configmap # 위에서 정의한 ConfigMap의 이름입니다.
@@ -13,5 +13,6 @@ spec:
            name : aws-credentials-14ben # AWS credentials secret의 이름입니다
      command : ["/bin/bash", "-c"]
      #args: ["/provision/select.sh && /provision/rev.05_full_pro.sh && tail -f /dev/null"]
-     args: ["/provision/full_pro.sh && tail -f /dev/null"]
+     #args: ["/provision/full_pro.sh && tail -f /dev/null"]
+     args: ["/provision/select.sh && tail -f /dev/null"]
    restartPolicy: Never
