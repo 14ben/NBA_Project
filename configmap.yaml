@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: env-configmap 
 data:
-  TITLE: doran
+  TITLE: ben
   PRI_SUB_COUNT: '3'
   PUB_SUB_COUNT: '3'
   EKS_VER: '1.23'

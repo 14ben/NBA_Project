@@ -8,8 +8,8 @@ pipeline {
         ACCOUNT_ID='622164100401'
         AWS_CREDENTIAL_NAME='NBA-AWS-Credential-v2'
         IMAGE_NAME = 'nba_full_provision'
-        IMAGE_VERSION = "6.0"
-        YAML_NAME = "Null"
+        IMAGE_VERSION = "1.1"
+        YAML_NAME = "."
 
 
     }

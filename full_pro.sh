@@ -2,7 +2,6 @@
 
 destroy() {
   echo "Start Destroy"
-#  curl -i -X POST -d '{"id":'$ID',"progress":"provision","state":"failed","emessage":"'$apply_output'"}' -H "Content-Type: application/json" $API_ENDPOINT
   terraform destroy -auto-approve > /dev/null 2>&1
   echo "Destroy Success"
 }
@@ -604,13 +603,6 @@ fi
 
 terraform init
 terraform apply -auto-approve
-#apply_output=$(terraform apply -auto-approve 2>&1 | sed "s/\x1B\[[0-9;]*[JKmsu]//g" | grep -E "Error" || true)
-#echo "Create Success"
-#if [[ -n $apply_output ]]; then
-#  echo "$apply_output" > output.txt
-#  echo "$apply_output"
-#  destroy
-
 
 if [ $? -ne 0 ]; then
   echo "Creation failed"
