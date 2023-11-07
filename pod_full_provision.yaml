@@ -5,7 +5,7 @@ metadata:
 spec:
    containers:
    - name: terraform-container 
-     image: 622164100401.dkr.ecr.ap-northeast-1.amazonaws.com/nba_full_provision:6.5
+     image: 622164100401.dkr.ecr.ap-northeast-1.amazonaws.com/nba_full_provision:6.6
      envFrom:
        - configMapRef:
            name: env-configmap # 위에서 정의한 ConfigMap의 이름입니다.
