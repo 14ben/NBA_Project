@@ -416,7 +416,7 @@ EOF
 if [ "False" = "$LB_POLICY" ]; then
 cat <<-EOF >> ./main/main.tf
 resource "aws_iam_policy" "alb_controller" {
-  name        = "AWSLoadBalancerControllerIAMPolicy-doran"
+  name        = "AWSLoadBalancerControllerIAMPolicyQUEST"
   description = "Policy for the AWS ALB controller"
   policy      = <<$LB_EOF
 {
