@@ -135,15 +135,15 @@ data "aws_nat_gateway" "ngw" {
 }
 
 locals {
-  test_nat_id = length(data.aws_nat_gateways.ngws.ids) > 0 ? [for nat in data.aws_nat_gateway.ngw : nat.id if nat.state == "available"] : null
+  test_nat_id = length(data.aws_nat_gateways.ngws.ids) > 0 ? [for nat in data.aws_nat_gateway.ngw : nat.id if nat.state == "available"] : []
 }
 
 locals {
-  semi_nat_id = length(local.test_nat_id) > 0 ? local.test_nat_id : null
+  semi_nat_id = local.test_nat_id != [] ? local.test_nat_id : []
 }
 
 locals {
-  sub_nat_id = local.semi_nat_id != null ? local.semi_nat_id[0] : null
+  sub_nat_id = local.semi_nat_id != [] ? local.semi_nat_id[0] : null
 }
 
 resource "aws_nat_gateway" "nat-gateway" {
@@ -416,7 +416,7 @@ EOF
 if [ "False" = "$LB_POLICY" ]; then
 cat <<-EOF >> ./main/main.tf
 resource "aws_iam_policy" "alb_controller" {
-  name        = "AWSLoadBalancerControllerIAMPolicyQUEST"
+  name        = "AWSLoadBalancerControllerIAMPolicy-doran"
   description = "Policy for the AWS ALB controller"
   policy      = <<$LB_EOF
 {
